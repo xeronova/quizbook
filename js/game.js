@@ -1212,6 +1212,10 @@ async function handleSignup(event) {
   submitBtn.textContent = '가입 중...';
 
   try {
+    if (!window.supabase || !supabase) {
+      throw new Error('Supabase가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+    }
+
     // Supabase 회원가입 (이메일 확인 비활성화 필요 - Dashboard에서 설정)
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -1257,6 +1261,10 @@ async function handleLogin(event) {
   submitBtn.textContent = '로그인 중...';
 
   try {
+    if (!window.supabase || !supabase) {
+      throw new Error('Supabase가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -1279,7 +1287,9 @@ async function handleLogout() {
   if (!confirm('로그아웃하시겠습니까?')) return;
 
   try {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     currentUser = null;
     showScreen('start-screen');
   } catch (error) {
@@ -1290,8 +1300,8 @@ async function handleLogout() {
 // ==================== Supabase Data Functions ====================
 
 async function saveGameResultToSupabase(result) {
-  if (!currentUser) {
-    console.log('Guest user - skipping Supabase save');
+  if (!currentUser || !supabase) {
+    console.log('Guest user or Supabase not available - skipping Supabase save');
     return;
   }
 
@@ -1327,6 +1337,8 @@ async function saveGameResultToSupabase(result) {
 }
 
 async function fetchLeaderboard(period = 'all', limit = 10) {
+  if (!supabase) return [];
+
   try {
     let query = supabase
       .from('game_sessions')
@@ -1362,7 +1374,7 @@ async function fetchLeaderboard(period = 'all', limit = 10) {
 }
 
 async function fetchUserStats() {
-  if (!currentUser) return null;
+  if (!currentUser || !supabase) return null;
 
   try {
     const { data, error } = await supabase

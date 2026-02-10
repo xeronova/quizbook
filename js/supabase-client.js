@@ -6,14 +6,28 @@ const SUPABASE_URL = 'https://dpxzwhtgakzfbdckfhxh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweHp3aHRnYWt6ZmJkY2tmaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MjYwMDUsImV4cCI6MjA4NjEwMjAwNX0.aQRACLCl1Uoj4suLINFgbaFlAUfh7TqjiTnEp9RVJi4';
 
 // Initialize Supabase client (loaded via CDN in index.html)
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Global auth state
+let supabase = null;
 let currentUser = null;
+
+// Initialize Supabase when available
+function initSupabase() {
+  if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✅ Supabase client initialized');
+    return true;
+  }
+  return false;
+}
 
 // ==================== Auth Status Management ====================
 
 async function checkAuthStatus() {
+  if (!supabase) {
+    console.log('⚠️ Supabase not initialized, showing login UI');
+    updateUIForAuthState();
+    return null;
+  }
+
   try {
     const { data: { session } } = await supabase.auth.getSession();
     currentUser = session?.user || null;
@@ -21,25 +35,47 @@ async function checkAuthStatus() {
     return currentUser;
   } catch (error) {
     console.error('Failed to check auth status:', error);
+    updateUIForAuthState();
     return null;
   }
 }
 
-// Listen for auth state changes
-supabase.auth.onAuthStateChange((event, session) => {
-  console.log('Auth state changed:', event);
-  currentUser = session?.user || null;
-  updateUIForAuthState();
+// Setup auth listener
+function setupAuthListener() {
+  if (!supabase) return;
 
-  // If user just signed in, migrate local data
-  if (event === 'SIGNED_IN' && currentUser) {
-    migrateLocalDataToSupabase();
-  }
-});
+  supabase.auth.onAuthStateChange((event, session) => {
+    console.log('Auth state changed:', event);
+    currentUser = session?.user || null;
+    updateUIForAuthState();
 
-// Check auth status on page load
+    // If user just signed in, migrate local data
+    if (event === 'SIGNED_IN' && currentUser) {
+      migrateLocalDataToSupabase();
+    }
+  });
+}
+
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-  checkAuthStatus();
+  console.log('🚀 Page loaded, initializing...');
+
+  // Wait for Supabase to load
+  if (initSupabase()) {
+    setupAuthListener();
+    checkAuthStatus();
+  } else {
+    // Retry after a short delay
+    setTimeout(() => {
+      if (initSupabase()) {
+        setupAuthListener();
+        checkAuthStatus();
+      } else {
+        console.error('❌ Supabase failed to load');
+        updateUIForAuthState(); // Show UI anyway
+      }
+    }, 100);
+  }
 });
 
 // ==================== UI Update ====================
@@ -49,7 +85,12 @@ function updateUIForAuthState() {
   const loggedOutBar = document.getElementById('logged-out-bar');
   const userNameDisplay = document.getElementById('user-name-display');
 
-  if (!loggedInBar || !loggedOutBar || !userNameDisplay) return;
+  if (!loggedInBar || !loggedOutBar) {
+    console.log('⚠️ Auth UI elements not found yet');
+    return;
+  }
+
+  console.log('🔄 Updating UI, currentUser:', currentUser ? 'logged in' : 'guest');
 
   if (currentUser) {
     // Logged in state
@@ -57,12 +98,14 @@ function updateUIForAuthState() {
     loggedOutBar.style.display = 'none';
 
     // Display user name
-    const displayName = currentUser.user_metadata?.name ||
-                       currentUser.email.split('@')[0];
-    userNameDisplay.textContent = displayName;
+    if (userNameDisplay) {
+      const displayName = currentUser.user_metadata?.name ||
+                         currentUser.email.split('@')[0];
+      userNameDisplay.textContent = displayName;
+    }
 
   } else {
-    // Logged out state
+    // Logged out state (guest mode)
     loggedInBar.style.display = 'none';
     loggedOutBar.style.display = 'flex';
   }
@@ -71,7 +114,7 @@ function updateUIForAuthState() {
 // ==================== Data Migration ====================
 
 async function migrateLocalDataToSupabase() {
-  if (!currentUser) return;
+  if (!currentUser || !supabase) return;
 
   const localData = LocalDataManager._load();
   if (!localData.results || localData.results.length === 0) return;
