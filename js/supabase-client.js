@@ -2,39 +2,37 @@
 // Supabase project credentials
 // Project: dpxzwhtgakzfbdckfhxh
 
-const SUPABASE_URL = 'https://dpxzwhtgakzfbdckfhxh.window.supabaseClient.co';
+const SUPABASE_URL = 'https://dpxzwhtgakzfbdckfhxh.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweHp3aHRnYWt6ZmJkY2tmaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MjYwMDUsImV4cCI6MjA4NjEwMjAwNX0.aQRACLCl1Uoj4suLINFgbaFlAUfh7TqjiTnEp9RVJi4';
 
 // Initialize Supabase client (loaded via CDN in index.html)
-// Use window object to avoid redeclaration errors
-window.window.supabaseClientClient = null;
-window.window.currentUser = null;
+// Store in global scope for access from game.js
+window.supabase = null;
+window.currentUser = null;
 
 // Initialize Supabase when available
 function initSupabase() {
-  if (window.window.supabaseClient && !window.window.supabaseClientClient) {
-    window.window.supabaseClientClient = window.window.supabaseClient.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    // Supabase library is loaded, create client
+    const supabaseLib = window.supabase;
+    window.supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('✅ Supabase client initialized');
     return true;
   }
-  return !!window.window.supabaseClientClient;
+  return false;
 }
-
-// Convenience aliases
-const getSupabase = () => window.window.supabaseClientClient;
-const getCurrentUser = () => window.window.currentUser;
 
 // ==================== Auth Status Management ====================
 
 async function checkAuthStatus() {
-  if (!window.supabaseClient) {
+  if (!window.supabase || !window.supabase.auth) {
     console.log('⚠️ Supabase not initialized, showing login UI');
     updateUIForAuthState();
     return null;
   }
 
   try {
-    const { data: { session } } = await window.supabaseClient.auth.getSession();
+    const { data: { session } } = await window.supabase.auth.getSession();
     window.currentUser = session?.user || null;
     updateUIForAuthState();
     return window.currentUser;
@@ -47,9 +45,9 @@ async function checkAuthStatus() {
 
 // Setup auth listener
 function setupAuthListener() {
-  if (!window.supabaseClient) return;
+  if (!window.supabase || !window.supabase.auth) return;
 
-  window.supabaseClient.auth.onAuthStateChange((event, session) => {
+  window.supabase.auth.onAuthStateChange((event, session) => {
     console.log('Auth state changed:', event);
     window.currentUser = session?.user || null;
     updateUIForAuthState();
@@ -95,7 +93,7 @@ function updateUIForAuthState() {
     return;
   }
 
-  console.log('🔄 Updating UI, window.currentUser:', window.currentUser ? 'logged in' : 'guest');
+  console.log('🔄 Updating UI, currentUser:', window.currentUser ? 'logged in' : 'guest');
 
   if (window.currentUser) {
     // Logged in state
@@ -119,7 +117,7 @@ function updateUIForAuthState() {
 // ==================== Data Migration ====================
 
 async function migrateLocalDataToSupabase() {
-  if (!window.currentUser || !window.supabaseClient) return;
+  if (!window.currentUser || !window.supabase) return;
 
   const localData = LocalDataManager._load();
   if (!localData.results || localData.results.length === 0) return;
@@ -149,7 +147,7 @@ async function migrateLocalDataToSupabase() {
       avg_response_time: result.avgResponseTime || 0
     }));
 
-    const { error } = await window.supabaseClient.from('game_sessions').insert(sessions);
+    const { error } = await window.supabase.from('game_sessions').insert(sessions);
 
     if (error) throw error;
 
