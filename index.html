@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>상식 퀴즈북</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Supabase Client Library -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <div class="container">
+
+    <!-- ==================== 시작 화면 ==================== -->
+    <div id="start-screen" class="screen active">
+      <div class="card">
+        <!-- 인증 상태 바 -->
+        <div class="auth-status-bar" id="auth-status-bar">
+          <!-- 로그인 전 -->
+          <div id="logged-out-bar" style="display:none;">
+            <button class="btn btn-secondary btn-sm" onclick="showScreen('login-screen')">
+              🔐 로그인
+            </button>
+          </div>
+
+          <!-- 로그인 후 -->
+          <div id="logged-in-bar" style="display:none;">
+            <span class="user-greeting">👤 <span id="user-name-display"></span>님</span>
+            <button class="btn-icon" onclick="handleLogout()">로그아웃</button>
+          </div>
+        </div>
+
+        <div class="start-header">
+          <div class="start-icon" aria-hidden="true">&#x1F4DA;</div>
+          <h1>상식 퀴즈북</h1>
+          <p>다양한 분야의 상식을 테스트해보세요!</p>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-item">
+            <div class="label">문제 수</div>
+            <div class="value">40문제</div>
+          </div>
+          <div class="info-item">
+            <div class="label">유형</div>
+            <div class="value">4지선다</div>
+          </div>
+          <div class="info-item">
+            <div class="label">카테고리</div>
+            <div class="value">4개</div>
+          </div>
+          <div class="info-item">
+            <div class="label">게임 모드</div>
+            <div class="value">3가지</div>
+          </div>
+        </div>
+
+        <div class="category-tags">
+          <span class="category-tag">&#x1F3EF; 한국사</span>
+          <span class="category-tag">&#x1F52C; 과학</span>
+          <span class="category-tag">&#x1F30D; 지리</span>
+          <span class="category-tag">&#x1F3A8; 예술과 문화</span>
+        </div>
+
+        <div class="student-name-row" style="margin-bottom:12px;">
+          <label for="student-name-input" style="font-size:13px;font-weight:600;color:var(--gray-600);display:block;margin-bottom:4px;">학생 이름</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" id="student-name-input" placeholder="이름을 입력하세요"
+              style="flex:1;padding:8px 12px;border:1px solid var(--gray-300);border-radius:8px;font-size:14px;background:var(--gray-50);color:var(--gray-800);"
+              onchange="StudentExporter.setStudentName(this.value)">
+            <button class="settings-btn" onclick="StudentExporter.exportData()" style="white-space:nowrap;">
+              &#x1F4E4; 내보내기
+            </button>
+          </div>
+          <div id="export-feedback" style="font-size:12px;color:var(--success);margin-top:4px;"></div>
+        </div>
+
+        <div class="settings-row">
+          <button class="settings-btn" id="theme-toggle" onclick="toggleDarkMode()">
+            &#x1F319; 다크모드
+          </button>
+          <button class="settings-btn" id="sound-toggle" onclick="toggleSound()">
+            &#x1F50A; 사운드
+          </button>
+        </div>
+
+        <button class="btn btn-primary" onclick="showScreen('mode-screen')">
+          게임 시작하기
+        </button>
+        <button class="btn btn-back" onclick="showStatsScreen()" style="margin-top:8px;">
+          &#x1F4CA; 나의 기록
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== 모드 선택 화면 ==================== -->
+    <div id="mode-screen" class="screen">
+      <div class="card">
+        <div class="mode-header">
+          <h2>게임 모드 선택</h2>
+          <p>원하는 모드를 선택하세요</p>
+        </div>
+
+        <div class="mode-list">
+          <button class="mode-card" onclick="selectMode('full')">
+            <div class="mode-icon">&#x1F3AF;</div>
+            <div class="mode-info">
+              <div class="mode-name">전체 도전</div>
+              <div class="mode-desc">4개 카테고리 40문제에 도전하세요</div>
+              <div class="mode-tags">
+                <span class="mode-tag">40문제</span>
+                <span class="mode-tag">시간제한 없음</span>
+              </div>
+            </div>
+          </button>
+
+          <button class="mode-card" onclick="showCategorySelect()">
+            <div class="mode-icon">&#x1F4CC;</div>
+            <div class="mode-info">
+              <div class="mode-name">카테고리별 도전</div>
+              <div class="mode-desc">원하는 카테고리를 골라 10문제에 도전</div>
+              <div class="mode-tags">
+                <span class="mode-tag">10문제</span>
+                <span class="mode-tag">카테고리 선택</span>
+              </div>
+            </div>
+          </button>
+
+          <button class="mode-card mode-card-speed" onclick="selectMode('speed')">
+            <div class="mode-icon">&#x26A1;</div>
+            <div class="mode-info">
+              <div class="mode-name">스피드 퀴즈</div>
+              <div class="mode-desc">문제당 15초! 랜덤 20문제에 도전</div>
+              <div class="mode-tags">
+                <span class="mode-tag">20문제</span>
+                <span class="mode-tag">15초 제한</span>
+              </div>
+            </div>
+          </button>
+        </div>
+
+        <!-- 난이도 선택 -->
+        <div class="difficulty-select">
+          <span class="diff-label">난이도:</span>
+          <button class="diff-btn active" data-diff="all" onclick="setDifficulty('all')">전체</button>
+          <button class="diff-btn" data-diff="easy" onclick="setDifficulty('easy')">쉬움</button>
+          <button class="diff-btn" data-diff="medium" onclick="setDifficulty('medium')">보통</button>
+          <button class="diff-btn" data-diff="hard" onclick="setDifficulty('hard')">어려움</button>
+        </div>
+
+        <!-- 카테고리 선택 (카테고리 모드 전용) -->
+        <div class="category-select" id="category-select" style="display:none;">
+          <h3>카테고리를 선택하세요</h3>
+          <div class="category-select-list">
+            <button class="category-select-btn" onclick="selectMode('category', '한국사')">
+              <span>&#x1F3EF;</span> 한국사
+            </button>
+            <button class="category-select-btn" onclick="selectMode('category', '과학')">
+              <span>&#x1F52C;</span> 과학
+            </button>
+            <button class="category-select-btn" onclick="selectMode('category', '지리')">
+              <span>&#x1F30D;</span> 지리
+            </button>
+            <button class="category-select-btn" onclick="selectMode('category', '예술과 문화')">
+              <span>&#x1F3A8;</span> 예술과 문화
+            </button>
+          </div>
+        </div>
+
+        <button class="btn btn-back" onclick="showScreen('start-screen'); hideCategorySelect();">
+          &#x2190; 뒤로가기
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== 퀴즈 화면 ==================== -->
+    <div id="quiz-screen" class="screen">
+      <div class="card quiz-card">
+        <!-- 상단 바: 카테고리 + 일시정지 + 진행률 -->
+        <div class="quiz-top-bar">
+          <span class="quiz-category" id="quiz-category"></span>
+          <div class="quiz-top-right">
+            <button class="pause-btn" id="pause-btn" onclick="togglePause()" title="일시정지">&#x23F8;</button>
+            <span class="quiz-progress-text" id="quiz-progress-text"></span>
+          </div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <!-- 점수 + 콤보 + 타이머 -->
+        <div class="quiz-status-bar">
+          <div class="quiz-score-display">
+            <span class="score-icon">&#x2B50;</span>
+            <span id="current-score">0</span>점
+          </div>
+          <div class="combo-display" id="combo-display" style="display:none;">
+            <span class="combo-fire">&#x1F525;</span>
+            <span id="combo-count">0</span> 콤보!
+          </div>
+          <div class="timer-display" id="timer-display" style="display:none;">
+            <svg class="timer-ring" width="40" height="40" viewBox="0 0 40 40">
+              <circle cx="20" cy="20" r="17" fill="none" stroke="#e5e7eb" stroke-width="3"/>
+              <circle id="timer-circle" cx="20" cy="20" r="17" fill="none" stroke="#4f46e5" stroke-width="3"
+                stroke-dasharray="106.8" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 20 20)"/>
+            </svg>
+            <span class="timer-text" id="timer-text">15</span>
+          </div>
+        </div>
+
+        <!-- 문제 영역 -->
+        <div id="difficulty-badge" class="difficulty-badge"></div>
+        <div class="question-number" id="question-number"></div>
+        <div class="question-text" id="question-text"></div>
+
+        <!-- 선택지 -->
+        <div class="options-list" id="options-list"></div>
+
+        <!-- 힌트 버튼 -->
+        <div class="hint-area" id="hint-area">
+          <button class="hint-btn" id="hint-btn" onclick="useHint()">
+            &#x1F4A1; 힌트 사용 (<span id="hint-remaining">3</span>회 남음)
+          </button>
+        </div>
+
+        <!-- 피드백 -->
+        <div class="feedback-area" id="feedback-area">
+          <div class="feedback-title" id="feedback-title"></div>
+          <div id="feedback-text"></div>
+          <div class="feedback-bonus" id="feedback-bonus"></div>
+        </div>
+
+        <div class="next-btn-area" id="next-btn-area">
+          <button class="btn btn-primary" id="next-btn" onclick="nextQuestion()">
+            다음 문제
+          </button>
+        </div>
+      </div>
+
+      <!-- 일시정지 오버레이 -->
+      <div class="pause-overlay" id="pause-overlay">
+        <div class="pause-modal">
+          <div class="pause-icon">&#x23F8;</div>
+          <h2>일시정지</h2>
+          <p>잠시 쉬어가세요</p>
+          <div class="pause-stats">
+            <div class="pause-stat">
+              <div class="pause-stat-value" id="pause-progress">0/0</div>
+              <div class="pause-stat-label">진행률</div>
+            </div>
+            <div class="pause-stat">
+              <div class="pause-stat-value" id="pause-score">0</div>
+              <div class="pause-stat-label">현재 점수</div>
+            </div>
+            <div class="pause-stat">
+              <div class="pause-stat-value" id="pause-streak">0</div>
+              <div class="pause-stat-label">현재 콤보</div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="togglePause()">계속하기</button>
+          <button class="btn btn-back" onclick="quitGame()" style="margin-top:8px;">게임 종료</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 결과 화면 ==================== -->
+    <div id="result-screen" class="screen">
+      <div class="card">
+        <div class="result-header">
+          <div class="result-icon" id="result-icon"></div>
+          <h2 id="result-title">퀴즈 완료!</h2>
+          <p id="result-subtitle">수고하셨습니다</p>
+        </div>
+
+        <div class="score-circle">
+          <div class="score-value" id="final-score">0</div>
+          <div class="score-label" id="final-score-label">점</div>
+        </div>
+
+        <div class="rank-badge" id="rank-badge">
+          <div class="rank-icon" id="rank-icon"></div>
+          <div class="rank-title" id="rank-title"></div>
+          <div class="rank-desc" id="rank-desc"></div>
+        </div>
+
+        <!-- 기본 통계 -->
+        <div class="result-stats" id="result-stats">
+          <div class="stat-item">
+            <div class="stat-value" id="total-questions">0</div>
+            <div class="stat-label">전체 문제</div>
+          </div>
+          <div class="stat-item correct-stat">
+            <div class="stat-value" id="correct-count">0</div>
+            <div class="stat-label">정답</div>
+          </div>
+          <div class="stat-item wrong-stat">
+            <div class="stat-value" id="wrong-count">0</div>
+            <div class="stat-label">오답</div>
+          </div>
+        </div>
+
+        <!-- 상세 점수 분석 -->
+        <div class="score-breakdown" id="score-breakdown">
+          <h3>&#x1F4CA; 점수 분석</h3>
+          <div class="breakdown-list">
+            <div class="breakdown-item">
+              <span class="breakdown-label">기본 점수</span>
+              <span class="breakdown-value" id="breakdown-base">0</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">&#x23F1; 시간 보너스</span>
+              <span class="breakdown-value bonus" id="breakdown-time">+0</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">&#x1F525; 콤보 보너스</span>
+              <span class="breakdown-value bonus" id="breakdown-combo">+0</span>
+            </div>
+            <div class="breakdown-item">
+              <span class="breakdown-label">&#x1F4A1; 노힌트 보너스</span>
+              <span class="breakdown-value bonus" id="breakdown-hint">+0</span>
+            </div>
+            <div class="breakdown-item breakdown-total">
+              <span class="breakdown-label">총점</span>
+              <span class="breakdown-value" id="breakdown-total">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 게임 성적 -->
+        <div class="performance-stats" id="performance-stats">
+          <h3>&#x1F3C3; 게임 성적</h3>
+          <div class="perf-grid">
+            <div class="perf-item">
+              <div class="perf-value" id="perf-accuracy">0%</div>
+              <div class="perf-label">정답률</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-value" id="perf-avg-time">0초</div>
+              <div class="perf-label">평균 응답시간</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-value" id="perf-streak">0</div>
+              <div class="perf-label">최대 콤보</div>
+            </div>
+            <div class="perf-item">
+              <div class="perf-value" id="perf-elapsed">0:00</div>
+              <div class="perf-label">소요 시간</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 카테고리별 결과 -->
+        <div class="category-results" id="category-results">
+          <h3>카테고리별 결과</h3>
+        </div>
+
+        <!-- 순위 기록 -->
+        <div class="history-section" id="history-section">
+          <h3>&#x1F3C6; 순위 기록</h3>
+          <div class="history-list" id="history-list"></div>
+        </div>
+
+        <div style="margin-top: 24px; display:flex; flex-direction:column; gap:8px;">
+          <button class="btn btn-primary" onclick="restartGame()">
+            다시 도전하기
+          </button>
+          <button class="btn btn-share" id="share-btn" onclick="shareResult()">
+            &#x1F4CB; 결과 공유하기
+          </button>
+          <div class="share-feedback" id="share-feedback"></div>
+          <button class="btn btn-back" onclick="showScreen('start-screen')">
+            &#x2190; 홈으로
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== 로그인 화면 ==================== -->
+    <div id="login-screen" class="screen">
+      <div class="card auth-card">
+        <div class="auth-header">
+          <h2>🔐 로그인</h2>
+          <p>상식 퀴즈북에 오신 것을 환영합니다</p>
+        </div>
+
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-email">이메일</label>
+            <input type="email" id="login-email" required placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">비밀번호</label>
+            <input type="password" id="login-password" required placeholder="비밀번호를 입력하세요" minlength="6">
+          </div>
+          <div class="auth-error" id="login-error"></div>
+          <button type="submit" class="btn btn-primary" id="login-btn">로그인</button>
+        </form>
+
+        <div class="auth-divider">또는</div>
+
+        <button class="btn btn-secondary" onclick="showScreen('signup-screen')">
+          회원가입
+        </button>
+        <button class="btn btn-back" onclick="showScreen('start-screen')">
+          게스트로 시작
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== 회원가입 화면 ==================== -->
+    <div id="signup-screen" class="screen">
+      <div class="card auth-card">
+        <div class="auth-header">
+          <h2>✨ 회원가입</h2>
+          <p>새로운 계정을 만들어보세요</p>
+        </div>
+
+        <form id="signup-form" onsubmit="handleSignup(event)">
+          <div class="form-group">
+            <label for="signup-name">이름</label>
+            <input type="text" id="signup-name" required placeholder="홍길동">
+          </div>
+          <div class="form-group">
+            <label for="signup-email">이메일</label>
+            <input type="email" id="signup-email" required placeholder="example@email.com">
+          </div>
+          <div class="form-group">
+            <label for="signup-password">비밀번호</label>
+            <input type="password" id="signup-password" required placeholder="6자 이상" minlength="6">
+          </div>
+          <div class="auth-error" id="signup-error"></div>
+          <button type="submit" class="btn btn-primary" id="signup-btn">회원가입</button>
+        </form>
+
+        <div class="auth-divider">이미 계정이 있나요?</div>
+
+        <button class="btn btn-secondary" onclick="showScreen('login-screen')">
+          로그인
+        </button>
+        <button class="btn btn-back" onclick="showScreen('start-screen')">
+          뒤로가기
+        </button>
+      </div>
+    </div>
+
+    <!-- ==================== 통계 화면 ==================== -->
+    <div id="stats-screen" class="screen">
+      <div class="card">
+        <div class="stats-header">
+          <h2>&#x1F4CA; 나의 기록</h2>
+        </div>
+
+        <div class="stats-tabs">
+          <button class="stats-tab active" data-tab="dashboard" onclick="showStatsTab('dashboard')">대시보드</button>
+          <button class="stats-tab" data-tab="leaderboard" onclick="showStatsTab('leaderboard')">순위표</button>
+          <button class="stats-tab" data-tab="growth" onclick="showStatsTab('growth')">성장 그래프</button>
+        </div>
+
+        <!-- 대시보드 탭 -->
+        <div class="stats-tab-content active" id="tab-dashboard">
+          <div class="dashboard-summary" id="dashboard-summary"></div>
+          <div id="category-accuracy"></div>
+        </div>
+
+        <!-- 순위표 탭 -->
+        <div class="stats-tab-content" id="tab-leaderboard">
+          <div class="leaderboard-filter" id="leaderboard-filter">
+            <button class="lb-filter active" data-period="all" onclick="filterLeaderboard('all')">전체</button>
+            <button class="lb-filter" data-period="week" onclick="filterLeaderboard('week')">이번 주</button>
+            <button class="lb-filter" data-period="today" onclick="filterLeaderboard('today')">오늘</button>
+          </div>
+          <div class="leaderboard-list" id="leaderboard-list"></div>
+        </div>
+
+        <!-- 성장 그래프 탭 -->
+        <div class="stats-tab-content" id="tab-growth">
+          <div class="growth-chart" id="growth-chart">
+            <svg id="growth-svg" viewBox="0 0 380 180" preserveAspectRatio="xMidYMid meet"></svg>
+          </div>
+          <div class="growth-legend">
+            <span class="growth-legend-item"><span class="legend-dot score-dot"></span> 점수</span>
+            <span class="growth-legend-item"><span class="legend-dot accuracy-dot"></span> 정답률(%)</span>
+          </div>
+        </div>
+
+        <button class="btn btn-back" onclick="showScreen('start-screen')" style="margin-top:20px;">
+          &#x2190; 홈으로
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="js/questions.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
