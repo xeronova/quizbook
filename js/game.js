@@ -1200,48 +1200,30 @@ function restartGame() {
 
 async function handleSignup(event) {
   event.preventDefault();
-
-  const name = document.getElementById('signup-name').value.trim();
-  const email = document.getElementById('signup-email').value.trim();
-  const password = document.getElementById('signup-password').value;
-  const errorEl = document.getElementById('signup-error');
-  const submitBtn = document.getElementById('signup-btn');
+  var name = $('signup-name').value.trim();
+  var email = $('signup-email').value.trim();
+  var password = $('signup-password').value;
+  var errorEl = $('signup-error');
+  var submitBtn = $('signup-btn');
 
   errorEl.textContent = '';
   submitBtn.disabled = true;
   submitBtn.textContent = '가입 중...';
 
   try {
-    if (!window.supabase || !supabase) {
-      throw new Error('Supabase가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
-    }
+    if (!db) throw new Error('서버에 연결할 수 없습니다. 페이지를 새로고침해주세요.');
 
-    // Supabase 회원가입 (이메일 확인 비활성화 필요 - Dashboard에서 설정)
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-        emailRedirectTo: undefined
-      }
-    });
+    var result = await db.auth.signUp({ email: email, password: password, options: { data: { name: name } } });
+    if (result.error) throw result.error;
 
-    if (error) throw error;
-
-    // 프로필 생성 (트리거가 실패한 경우 대비)
-    if (data.user) {
-      await supabase.from('user_profiles').upsert({
-        user_id: data.user.id,
-        display_name: name,
-        student_name: name
-      });
+    if (result.data.user) {
+      await db.from('user_profiles').upsert({ user_id: result.data.user.id, display_name: name, student_name: name });
     }
 
     alert('회원가입 성공! 로그인됩니다.');
     showScreen('start-screen');
-
-  } catch (error) {
-    errorEl.textContent = `오류: ${error.message}`;
+  } catch (err) {
+    errorEl.textContent = '오류: ' + err.message;
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '회원가입';
@@ -1250,33 +1232,25 @@ async function handleSignup(event) {
 
 async function handleLogin(event) {
   event.preventDefault();
-
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  const errorEl = document.getElementById('login-error');
-  const submitBtn = document.getElementById('login-btn');
+  var email = $('login-email').value.trim();
+  var password = $('login-password').value;
+  var errorEl = $('login-error');
+  var submitBtn = $('login-btn');
 
   errorEl.textContent = '';
   submitBtn.disabled = true;
   submitBtn.textContent = '로그인 중...';
 
   try {
-    if (!window.supabase || !supabase) {
-      throw new Error('Supabase가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
-    }
+    if (!db) throw new Error('서버에 연결할 수 없습니다. 페이지를 새로고침해주세요.');
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
+    var result = await db.auth.signInWithPassword({ email: email, password: password });
+    if (result.error) throw result.error;
 
-    if (error) throw error;
-
-    currentUser = data.user;
+    currentUser = result.data.user;
     showScreen('start-screen');
-
-  } catch (error) {
-    errorEl.textContent = `오류: ${error.message}`;
+  } catch (err) {
+    errorEl.textContent = '오류: ' + err.message;
   } finally {
     submitBtn.disabled = false;
     submitBtn.textContent = '로그인';
@@ -1285,109 +1259,78 @@ async function handleLogin(event) {
 
 async function handleLogout() {
   if (!confirm('로그아웃하시겠습니까?')) return;
-
   try {
-    if (supabase) {
-      await supabase.auth.signOut();
-    }
+    if (db) await db.auth.signOut();
     currentUser = null;
     showScreen('start-screen');
-  } catch (error) {
-    alert(`로그아웃 실패: ${error.message}`);
+  } catch (err) {
+    alert('로그아웃 실패: ' + err.message);
   }
 }
 
 // ==================== Supabase Data Functions ====================
 
 async function saveGameResultToSupabase(result) {
-  if (!currentUser || !supabase) {
-    console.log('Guest user or Supabase not available - skipping Supabase save');
-    return;
-  }
+  if (!currentUser || !db) return;
 
   try {
-    const { error } = await supabase.from('game_sessions').insert({
+    var res = await db.from('game_sessions').insert({
       user_id: currentUser.id,
-      score: result.score,
-      accuracy: result.accuracy,
-      correct_count: result.correct,
-      total_questions: result.total,
-      mode_key: result.modeKey,
-      mode_name: result.mode,
+      score: result.score, accuracy: result.accuracy,
+      correct_count: result.correct, total_questions: result.total,
+      mode_key: result.modeKey, mode_name: result.mode,
       selected_category: result.selectedCategory,
       selected_difficulty: state.selectedDifficulty || 'all',
-      longest_streak: result.streak,
-      avg_response_time: result.avgResponseTime,
+      longest_streak: result.streak, avg_response_time: result.avgResponseTime,
       elapsed_seconds: Math.floor((Date.now() - state.startTime - state.totalPausedTime) / 1000),
-      base_score: result.totalBaseScore,
-      time_bonus: result.totalTimeBonus,
-      combo_bonus: result.totalComboBonus,
-      hint_bonus: result.totalHintBonus,
-      category_scores: result.categoryScores,
-      response_times: state.responseTimes
+      base_score: result.totalBaseScore, time_bonus: result.totalTimeBonus,
+      combo_bonus: result.totalComboBonus, hint_bonus: result.totalHintBonus,
+      category_scores: result.categoryScores, response_times: state.responseTimes
     });
-
-    if (error) throw error;
-    console.log('✅ Game result saved to Supabase');
-
-  } catch (error) {
-    console.error('❌ Supabase save failed:', error);
-    // Fallback to localStorage only
+    if (res.error) throw res.error;
+    console.log('Game result saved to Supabase');
+  } catch (err) {
+    console.error('Supabase save failed:', err);
   }
 }
 
-async function fetchLeaderboard(period = 'all', limit = 10) {
-  if (!supabase) return [];
+async function fetchLeaderboard(period, limit) {
+  if (!db) return [];
+  period = period || 'all';
+  limit = limit || 10;
 
   try {
-    let query = supabase
-      .from('game_sessions')
-      .select(`
-        score,
-        mode_name,
-        completed_at,
-        user_profiles!inner(display_name)
-      `)
+    var query = db.from('game_sessions')
+      .select('score, mode_name, completed_at, user_profiles!inner(display_name)')
       .order('score', { ascending: false })
       .limit(limit);
 
-    // 기간 필터
     if (period === 'today') {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+      var today = new Date(); today.setHours(0, 0, 0, 0);
       query = query.gte('completed_at', today.toISOString());
     } else if (period === 'week') {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
+      var weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
       query = query.gte('completed_at', weekAgo.toISOString());
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
-
-    return data || [];
-
-  } catch (error) {
-    console.error('Failed to fetch leaderboard:', error);
+    var result = await query;
+    if (result.error) throw result.error;
+    return result.data || [];
+  } catch (err) {
+    console.error('Failed to fetch leaderboard:', err);
     return [];
   }
 }
 
 async function fetchUserStats() {
-  if (!currentUser || !supabase) return null;
+  if (!currentUser || !db) return null;
 
   try {
-    const { data, error } = await supabase
-      .from('user_stats')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .single();
-
-    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = not found
-    return data;
-
-  } catch (error) {
-    console.error('Failed to fetch user stats:', error);
+    var result = await db.from('user_stats').select('*').eq('user_id', currentUser.id).single();
+    if (result.error && result.error.code !== 'PGRST116') throw result.error;
+    return result.data;
+  } catch (err) {
+    console.error('Failed to fetch user stats:', err);
     return null;
   }
 }

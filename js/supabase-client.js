@@ -1,131 +1,81 @@
 // ==================== Supabase Client Configuration ====================
-// Supabase project credentials
 // Project: dpxzwhtgakzfbdckfhxh
 
-const SUPABASE_URL = 'https://dpxzwhtgakzfbdckfhxh.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweHp3aHRnYWt6ZmJkY2tmaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MjYwMDUsImV4cCI6MjA4NjEwMjAwNX0.aQRACLCl1Uoj4suLINFgbaFlAUfh7TqjiTnEp9RVJi4';
+var SUPABASE_URL = 'https://dpxzwhtgakzfbdckfhxh.supabase.co';
+var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRweHp3aHRnYWt6ZmJkY2tmaHhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1MjYwMDUsImV4cCI6MjA4NjEwMjAwNX0.aQRACLCl1Uoj4suLINFgbaFlAUfh7TqjiTnEp9RVJi4';
 
-// Initialize Supabase client (loaded via CDN in index.html)
-// Store in global scope for access from game.js
-window.supabase = null;
-window.currentUser = null;
+// Save CDN library reference immediately (before anything overwrites it)
+var _supabaseLib = window.supabase;
+var db = null;
+var currentUser = null;
 
-// Initialize Supabase when available
+// Initialize client from the saved library reference
 function initSupabase() {
-  // Check if Supabase library is loaded
-  if (window.supabase) {
-    console.log('🔍 Checking Supabase library...', typeof window.supabase);
-
-    if (typeof window.supabase.createClient === 'function') {
-      // Supabase library is loaded, create client
-      const supabaseLib = window.supabase;
-      window.supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log('✅ Supabase client initialized');
-      return true;
-    } else {
-      console.log('⚠️ window.supabase exists but createClient not found');
-    }
-  } else {
-    console.log('⚠️ window.supabase not found');
+  if (db) return true;
+  if (_supabaseLib && typeof _supabaseLib.createClient === 'function') {
+    db = _supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase client initialized');
+    return true;
   }
   return false;
 }
 
-// ==================== Auth Status Management ====================
+// ==================== Auth Status ====================
 
 async function checkAuthStatus() {
-  if (!window.supabase || !window.supabase.auth) {
-    console.log('⚠️ Supabase not initialized, showing login UI');
-    updateUIForAuthState();
-    return null;
-  }
-
+  if (!db) { updateUIForAuthState(); return null; }
   try {
-    const { data: { session } } = await window.supabase.auth.getSession();
-    window.currentUser = session?.user || null;
+    var resp = await db.auth.getSession();
+    currentUser = (resp.data.session && resp.data.session.user) || null;
     updateUIForAuthState();
-    return window.currentUser;
-  } catch (error) {
-    console.error('Failed to check auth status:', error);
+    return currentUser;
+  } catch (e) {
+    console.error('Auth check failed:', e);
     updateUIForAuthState();
     return null;
   }
 }
 
-// Setup auth listener
 function setupAuthListener() {
-  if (!window.supabase || !window.supabase.auth) return;
-
-  window.supabase.auth.onAuthStateChange((event, session) => {
-    console.log('Auth state changed:', event);
-    window.currentUser = session?.user || null;
+  if (!db) return;
+  db.auth.onAuthStateChange(function(event, session) {
+    currentUser = (session && session.user) || null;
     updateUIForAuthState();
-
-    // If user just signed in, migrate local data
-    if (event === 'SIGNED_IN' && window.currentUser) {
+    if (event === 'SIGNED_IN' && currentUser) {
       migrateLocalDataToSupabase();
     }
   });
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 Page loaded, initializing...');
+// ==================== Init on Load ====================
 
-  // Try to initialize Supabase with multiple retries
-  let attempts = 0;
-  const maxAttempts = 10;
-  const retryDelay = 200;
-
-  function tryInit() {
-    attempts++;
-    console.log(`🔄 Attempt ${attempts}/${maxAttempts} to initialize Supabase...`);
-
-    if (initSupabase()) {
-      setupAuthListener();
-      checkAuthStatus();
-    } else if (attempts < maxAttempts) {
-      // Retry after delay
-      setTimeout(tryInit, retryDelay);
-    } else {
-      console.error('❌ Supabase failed to load after', maxAttempts, 'attempts');
-      console.log('📝 Guest mode available - login/signup will not work');
-      updateUIForAuthState(); // Show UI anyway
-    }
+document.addEventListener('DOMContentLoaded', function() {
+  if (initSupabase()) {
+    setupAuthListener();
+    checkAuthStatus();
+  } else {
+    console.error('Supabase library not loaded');
+    updateUIForAuthState();
   }
-
-  // Start initialization
-  tryInit();
 });
 
 // ==================== UI Update ====================
 
 function updateUIForAuthState() {
-  const loggedInBar = document.getElementById('logged-in-bar');
-  const loggedOutBar = document.getElementById('logged-out-bar');
-  const userNameDisplay = document.getElementById('user-name-display');
+  var loggedInBar = document.getElementById('logged-in-bar');
+  var loggedOutBar = document.getElementById('logged-out-bar');
+  var userNameDisplay = document.getElementById('user-name-display');
+  if (!loggedInBar || !loggedOutBar) return;
 
-  if (!loggedInBar || !loggedOutBar) {
-    console.log('⚠️ Auth UI elements not found yet');
-    return;
-  }
-
-  console.log('🔄 Updating UI, currentUser:', window.currentUser ? 'logged in' : 'guest');
-
-  if (window.currentUser) {
-    // Logged in state
+  if (currentUser) {
     loggedInBar.style.display = 'flex';
     loggedOutBar.style.display = 'none';
-
-    // Display user name
     if (userNameDisplay) {
-      const displayName = window.currentUser.user_metadata?.name ||
-                         window.currentUser.email.split('@')[0];
-      userNameDisplay.textContent = displayName;
+      var name = (currentUser.user_metadata && currentUser.user_metadata.name) ||
+                 currentUser.email.split('@')[0];
+      userNameDisplay.textContent = name;
     }
-
   } else {
-    // Logged out state (guest mode)
     loggedInBar.style.display = 'none';
     loggedOutBar.style.display = 'flex';
   }
@@ -134,44 +84,30 @@ function updateUIForAuthState() {
 // ==================== Data Migration ====================
 
 async function migrateLocalDataToSupabase() {
-  if (!window.currentUser || !window.supabase) return;
-
-  const localData = LocalDataManager._load();
+  if (!currentUser || !db) return;
+  var localData = LocalDataManager._load();
   if (!localData.results || localData.results.length === 0) return;
 
   try {
-    console.log(`Migrating ${localData.results.length} local games to Supabase...`);
-
-    const sessions = localData.results.map(result => ({
-      user_id: window.currentUser.id,
-      score: result.score || 0,
-      accuracy: result.accuracy || 0,
-      correct_count: result.correct || 0,
-      total_questions: result.total || 0,
-      mode_key: result.modeKey || 'full',
-      mode_name: result.mode || '전체 도전',
-      selected_category: result.selectedCategory,
-      selected_difficulty: 'all',
-      longest_streak: result.streak || 0,
-      elapsed_seconds: 0,
-      completed_at: result.timestamp ? new Date(result.timestamp).toISOString() : new Date().toISOString(),
-      base_score: result.totalBaseScore || 0,
-      time_bonus: result.totalTimeBonus || 0,
-      combo_bonus: result.totalComboBonus || 0,
-      hint_bonus: result.totalHintBonus || 0,
-      category_scores: result.categoryScores,
-      response_times: [],
-      avg_response_time: result.avgResponseTime || 0
-    }));
-
-    const { error } = await window.supabase.from('game_sessions').insert(sessions);
-
-    if (error) throw error;
-
-    console.log(`✅ Successfully migrated ${sessions.length} games to Supabase`);
-
-  } catch (error) {
-    console.error('Migration failed:', error);
-    // Fallback: keep using localStorage
+    var sessions = localData.results.map(function(r) {
+      return {
+        user_id: currentUser.id,
+        score: r.score || 0, accuracy: r.accuracy || 0,
+        correct_count: r.correct || 0, total_questions: r.total || 0,
+        mode_key: r.modeKey || 'full', mode_name: r.mode || '전체 도전',
+        selected_category: r.selectedCategory, selected_difficulty: 'all',
+        longest_streak: r.streak || 0, elapsed_seconds: 0,
+        completed_at: r.timestamp ? new Date(r.timestamp).toISOString() : new Date().toISOString(),
+        base_score: r.totalBaseScore || 0, time_bonus: r.totalTimeBonus || 0,
+        combo_bonus: r.totalComboBonus || 0, hint_bonus: r.totalHintBonus || 0,
+        category_scores: r.categoryScores, response_times: [],
+        avg_response_time: r.avgResponseTime || 0
+      };
+    });
+    var result = await db.from('game_sessions').insert(sessions);
+    if (result.error) throw result.error;
+    console.log('Migrated ' + sessions.length + ' games to Supabase');
+  } catch (e) {
+    console.error('Migration failed:', e);
   }
 }
