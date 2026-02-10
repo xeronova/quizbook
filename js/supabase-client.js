@@ -12,12 +12,21 @@ window.currentUser = null;
 
 // Initialize Supabase when available
 function initSupabase() {
-  if (window.supabase && typeof window.supabase.createClient === 'function') {
-    // Supabase library is loaded, create client
-    const supabaseLib = window.supabase;
-    window.supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('✅ Supabase client initialized');
-    return true;
+  // Check if Supabase library is loaded
+  if (window.supabase) {
+    console.log('🔍 Checking Supabase library...', typeof window.supabase);
+
+    if (typeof window.supabase.createClient === 'function') {
+      // Supabase library is loaded, create client
+      const supabaseLib = window.supabase;
+      window.supabase = supabaseLib.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('✅ Supabase client initialized');
+      return true;
+    } else {
+      console.log('⚠️ window.supabase exists but createClient not found');
+    }
+  } else {
+    console.log('⚠️ window.supabase not found');
   }
   return false;
 }
@@ -63,22 +72,30 @@ function setupAuthListener() {
 document.addEventListener('DOMContentLoaded', () => {
   console.log('🚀 Page loaded, initializing...');
 
-  // Wait for Supabase to load
-  if (initSupabase()) {
-    setupAuthListener();
-    checkAuthStatus();
-  } else {
-    // Retry after a short delay
-    setTimeout(() => {
-      if (initSupabase()) {
-        setupAuthListener();
-        checkAuthStatus();
-      } else {
-        console.error('❌ Supabase failed to load');
-        updateUIForAuthState(); // Show UI anyway
-      }
-    }, 100);
+  // Try to initialize Supabase with multiple retries
+  let attempts = 0;
+  const maxAttempts = 10;
+  const retryDelay = 200;
+
+  function tryInit() {
+    attempts++;
+    console.log(`🔄 Attempt ${attempts}/${maxAttempts} to initialize Supabase...`);
+
+    if (initSupabase()) {
+      setupAuthListener();
+      checkAuthStatus();
+    } else if (attempts < maxAttempts) {
+      // Retry after delay
+      setTimeout(tryInit, retryDelay);
+    } else {
+      console.error('❌ Supabase failed to load after', maxAttempts, 'attempts');
+      console.log('📝 Guest mode available - login/signup will not work');
+      updateUIForAuthState(); // Show UI anyway
+    }
   }
+
+  // Start initialization
+  tryInit();
 });
 
 // ==================== UI Update ====================

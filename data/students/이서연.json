@@ -1,0 +1,97 @@
+{
+  "version": 2,
+  "results": [
+    {
+      "score": 128, "accuracy": 85.0, "correct": 34, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 8, "date": "2026-02-06", "time": "9:10",
+      "timestamp": 1738800000000,
+      "categoryScores": {"한국사": {"correct": 8, "total": 10}, "과학": {"correct": 7, "total": 10}, "지리": {"correct": 9, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 7.8,
+      "totalBaseScore": 340, "totalTimeBonus": 36, "totalComboBonus": 18, "totalHintBonus": 34
+    },
+    {
+      "score": 125, "accuracy": 85.0, "correct": 17, "total": 20,
+      "mode": "스피드", "modeKey": "speed", "selectedCategory": null,
+      "streak": 7, "date": "2026-02-04", "time": "4:30",
+      "timestamp": 1738627200000,
+      "categoryScores": {"한국사": {"correct": 4, "total": 5}, "과학": {"correct": 3, "total": 5}, "지리": {"correct": 5, "total": 5}, "예술과 문화": {"correct": 5, "total": 5}},
+      "avgResponseTime": 8.2,
+      "totalBaseScore": 170, "totalTimeBonus": 21, "totalComboBonus": 14, "totalHintBonus": 24
+    },
+    {
+      "score": 120, "accuracy": 82.5, "correct": 33, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 6, "date": "2026-02-02", "time": "9:40",
+      "timestamp": 1738454400000,
+      "categoryScores": {"한국사": {"correct": 8, "total": 10}, "과학": {"correct": 6, "total": 10}, "지리": {"correct": 9, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 8.5,
+      "totalBaseScore": 330, "totalTimeBonus": 30, "totalComboBonus": 14, "totalHintBonus": 30
+    },
+    {
+      "score": 115, "accuracy": 82.5, "correct": 33, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 6, "date": "2026-01-31", "time": "10:05",
+      "timestamp": 1738281600000,
+      "categoryScores": {"한국사": {"correct": 9, "total": 10}, "과학": {"correct": 6, "total": 10}, "지리": {"correct": 8, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 8.8,
+      "totalBaseScore": 330, "totalTimeBonus": 27, "totalComboBonus": 12, "totalHintBonus": 28
+    },
+    {
+      "score": 110, "accuracy": 80.0, "correct": 32, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 5, "date": "2026-01-29", "time": "10:20",
+      "timestamp": 1738108800000,
+      "categoryScores": {"한국사": {"correct": 8, "total": 10}, "과학": {"correct": 6, "total": 10}, "지리": {"correct": 8, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 9.0,
+      "totalBaseScore": 320, "totalTimeBonus": 24, "totalComboBonus": 10, "totalHintBonus": 26
+    },
+    {
+      "score": 130, "accuracy": 90.0, "correct": 9, "total": 10,
+      "mode": "카테고리별", "modeKey": "category", "selectedCategory": "예술과 문화",
+      "streak": 9, "date": "2026-01-27", "time": "2:10",
+      "timestamp": 1737936000000,
+      "categoryScores": {"예술과 문화": {"correct": 9, "total": 10}},
+      "avgResponseTime": 6.0,
+      "totalBaseScore": 90, "totalTimeBonus": 18, "totalComboBonus": 15, "totalHintBonus": 18
+    },
+    {
+      "score": 105, "accuracy": 80.0, "correct": 32, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 5, "date": "2026-01-25", "time": "10:35",
+      "timestamp": 1737763200000,
+      "categoryScores": {"한국사": {"correct": 8, "total": 10}, "과학": {"correct": 5, "total": 10}, "지리": {"correct": 9, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 9.2,
+      "totalBaseScore": 320, "totalTimeBonus": 21, "totalComboBonus": 8, "totalHintBonus": 24
+    },
+    {
+      "score": 100, "accuracy": 78.0, "correct": 31, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 4, "date": "2026-01-23", "time": "10:50",
+      "timestamp": 1737590400000,
+      "categoryScores": {"한국사": {"correct": 7, "total": 10}, "과학": {"correct": 6, "total": 10}, "지리": {"correct": 8, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 9.5,
+      "totalBaseScore": 310, "totalTimeBonus": 18, "totalComboBonus": 6, "totalHintBonus": 22
+    },
+    {
+      "score": 95, "accuracy": 78.0, "correct": 31, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 4, "date": "2026-01-21", "time": "11:00",
+      "timestamp": 1737417600000,
+      "categoryScores": {"한국사": {"correct": 7, "total": 10}, "과학": {"correct": 5, "total": 10}, "지리": {"correct": 9, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 9.8,
+      "totalBaseScore": 310, "totalTimeBonus": 15, "totalComboBonus": 5, "totalHintBonus": 20
+    },
+    {
+      "score": 90, "accuracy": 78.0, "correct": 31, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 4, "date": "2026-01-19", "time": "11:10",
+      "timestamp": 1737244800000,
+      "categoryScores": {"한국사": {"correct": 7, "total": 10}, "과학": {"correct": 5, "total": 10}, "지리": {"correct": 9, "total": 10}, "예술과 문화": {"correct": 10, "total": 10}},
+      "avgResponseTime": 10.0,
+      "totalBaseScore": 310, "totalTimeBonus": 12, "totalComboBonus": 4, "totalHintBonus": 18
+    }
+  ],
+  "settings": {"darkMode": false, "soundEnabled": true},
+  "stats": {"totalGames": 10, "totalCorrect": 283, "totalQuestions": 350}
+}

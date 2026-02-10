@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "created": "2026-02-07",
+  "students": [
+    {"name": "김지훈", "file": "김지훈.json", "enrolled": "2026-01-15"},
+    {"name": "이서연", "file": "이서연.json", "enrolled": "2026-01-18"},
+    {"name": "박민준", "file": "박민준.json", "enrolled": "2026-01-15"},
+    {"name": "최예은", "file": "최예은.json", "enrolled": "2026-01-17"},
+    {"name": "정우진", "file": "정우진.json", "enrolled": "2026-01-16"},
+    {"name": "한소율", "file": "한소율.json", "enrolled": "2026-01-14"},
+    {"name": "오태현", "file": "오태현.json", "enrolled": "2026-01-27"}
+  ]
+}

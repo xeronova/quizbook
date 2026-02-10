@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상식 퀴즈북 — 학급 대시보드</title>
+<style>
+/* ==================== Reset & Base ==================== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-light: #e0e7ff;
+  --success: #16a34a;
+  --success-light: #dcfce7;
+  --success-bg: #f0fdf4;
+  --danger: #dc2626;
+  --danger-light: #fee2e2;
+  --danger-bg: #fef2f2;
+  --warning: #f59e0b;
+  --warning-light: #fef3c7;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --white: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.1), 0 4px 6px rgba(0,0,0,0.05);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+  --bar-bg: #e5e7eb;
+  --text-primary: var(--gray-900);
+  --text-secondary: var(--gray-600);
+  --bg-page: #f5f3ff;
+  --bg-card: var(--white);
+  --border-color: var(--gray-200);
+}
+
+[data-theme="dark"] {
+  --primary: #818cf8;
+  --primary-hover: #6366f1;
+  --primary-light: #1e1b4b;
+  --success: #4ade80;
+  --success-light: #052e16;
+  --success-bg: #052e16;
+  --danger: #f87171;
+  --danger-light: #450a0a;
+  --danger-bg: #450a0a;
+  --warning: #fbbf24;
+  --warning-light: #451a03;
+  --gray-50: #1f2937;
+  --gray-100: #1f2937;
+  --gray-200: #374151;
+  --gray-300: #4b5563;
+  --gray-400: #9ca3af;
+  --gray-500: #9ca3af;
+  --gray-600: #d1d5db;
+  --gray-700: #e5e7eb;
+  --gray-800: #f3f4f6;
+  --gray-900: #f9fafb;
+  --white: #111827;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 15px rgba(0,0,0,0.4), 0 4px 6px rgba(0,0,0,0.3);
+  --bar-bg: #374151;
+  --text-primary: #f9fafb;
+  --text-secondary: #d1d5db;
+  --bg-page: #0f172a;
+  --bg-card: #1e293b;
+  --border-color: #334155;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-primary);
+  line-height: 1.6;
+  padding: 24px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ==================== Header ==================== */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.header .subtitle {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border-color);
+  color: var(--text-secondary);
+}
+.btn-outline:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ==================== Section ==================== */
+.section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ==================== Metric Cards ==================== */
+.metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.metric-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+.metric-card .label {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.metric-card .value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.metric-card .sub {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ==================== Table ==================== */
+.table-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+th {
+  background: var(--gray-50);
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 2px solid var(--border-color);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  position: relative;
+}
+
+th:hover { color: var(--primary); }
+
+th .sort-arrow {
+  font-size: 0.7rem;
+  margin-left: 4px;
+  opacity: 0.3;
+}
+
+th.sorted .sort-arrow { opacity: 1; color: var(--primary); }
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+tr:last-child td { border-bottom: none; }
+
+tr:hover td { background: var(--gray-50); }
+
+.grade-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.grade-S { background: #dbeafe; color: #1d4ed8; }
+.grade-A { background: var(--success-light); color: var(--success); }
+.grade-B { background: var(--warning-light); color: #b45309; }
+.grade-C { background: #fef3c7; color: #92400e; }
+.grade-D { background: var(--danger-light); color: var(--danger); }
+
+[data-theme="dark"] .grade-S { background: #1e3a5f; color: #60a5fa; }
+[data-theme="dark"] .grade-B { background: #451a03; color: #fbbf24; }
+[data-theme="dark"] .grade-C { background: #451a03; color: #f59e0b; }
+
+.trend-up { color: var(--success); font-weight: 700; }
+.trend-down { color: var(--danger); font-weight: 700; }
+.trend-flat { color: var(--gray-400); }
+
+/* ==================== Category Cards ==================== */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.cat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.cat-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.cat-card .cat-avg {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  gap: 8px;
+}
+
+.bar-label {
+  width: 48px;
+  font-size: 0.78rem;
+  text-align: right;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.bar-track {
+  flex: 1;
+  height: 18px;
+  background: var(--bar-bg);
+  border-radius: 9px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 9px;
+  transition: width 0.5s ease;
+}
+
+.bar-value {
+  width: 38px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: left;
+  flex-shrink: 0;
+}
+
+.avg-line {
+  position: absolute;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--gray-700);
+  opacity: 0.6;
+}
+
+/* ==================== Histogram ==================== */
+.histogram {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: var(--shadow);
+}
+
+.hist-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  height: 180px;
+  margin-bottom: 8px;
+  padding: 0 20px;
+}
+
+.hist-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.hist-bar {
+  width: 100%;
+  max-width: 100px;
+  border-radius: 8px 8px 0 0;
+  min-height: 4px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  transition: height 0.5s ease;
+  position: relative;
+}
+
+.hist-count {
+  position: absolute;
+  top: -22px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hist-label {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.hist-names {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* ==================== Action Items ==================== */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.action-card {
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow);
+}
+
+.action-card.urgent {
+  border: 1.5px solid var(--danger);
+  border-left: 4px solid var(--danger);
+}
+
+.action-card.monitor {
+  border: 1.5px solid var(--warning);
+  border-left: 4px solid var(--warning);
+}
+
+.action-card.positive {
+  border: 1.5px solid var(--success);
+  border-left: 4px solid var(--success);
+}
+
+.action-card h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.action-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.action-card li {
+  padding: 4px 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.action-card li::before {
+  margin-right: 6px;
+}
+
+/* ==================== Print ==================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 15mm;
+  }
+
+  body {
+    background: #fff !important;
+    color: #111 !important;
+    padding: 0;
+    font-size: 11px;
+  }
+
+  .no-print { display: none !important; }
+
+  .section { break-inside: avoid; }
+
+  .header { margin-bottom: 16px; }
+
+  .metric-card, .cat-card, .action-card, .histogram, .table-wrap {
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  .bar-fill { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .grade-badge { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .hist-bar { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+  .action-card { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+
+  tr:hover td { background: transparent !important; }
+}
+
+/* ==================== Responsive ==================== */
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  .header h1 { font-size: 1.3rem; }
+  .metrics { grid-template-columns: 1fr 1fr; }
+  .cat-grid { grid-template-columns: 1fr; }
+  .actions-grid { grid-template-columns: 1fr; }
+  td, th { padding: 8px 10px; font-size: 0.82rem; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ==================== 1. Header ==================== -->
+  <div class="header">
+    <div>
+      <h1>상식 퀴즈북 학급 대시보드</h1>
+      <div class="subtitle" id="gen-date"></div>
+    </div>
+    <div class="header-actions no-print">
+      <button class="btn btn-outline" id="theme-toggle" onclick="toggleTheme()">
+        <span id="theme-icon">&#127769;</span> 다크모드
+      </button>
+      <button class="btn btn-primary" onclick="window.print()">
+        &#128438; PDF 다운로드
+      </button>
+    </div>
+  </div>
+
+  <!-- ==================== 2. Overview Metrics ==================== -->
+  <div class="section">
+    <div class="section-title">&#128202; 학급 개요</div>
+    <div class="metrics" id="metrics"></div>
+  </div>
+
+  <!-- ==================== 3. Student Table ==================== -->
+  <div class="section">
+    <div class="section-title">&#128101; 학생별 성적</div>
+    <div class="table-wrap">
+      <table id="student-table">
+        <thead>
+          <tr>
+            <th data-key="rank">순위 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="name">이름 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="games">게임수 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="avgScore">평균점수 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="accuracy">정답률 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="maxStreak">최고연속 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="trend">추세 <span class="sort-arrow">&#9650;</span></th>
+            <th data-key="grade">등급 <span class="sort-arrow">&#9650;</span></th>
+          </tr>
+        </thead>
+        <tbody id="student-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ==================== 4. Category Analysis ==================== -->
+  <div class="section">
+    <div class="section-title">&#128218; 카테고리별 분석</div>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+
+  <!-- ==================== 5. Accuracy Distribution ==================== -->
+  <div class="section">
+    <div class="section-title">&#128200; 정답률 분포</div>
+    <div class="histogram" id="histogram"></div>
+  </div>
+
+  <!-- ==================== 6. Action Items ==================== -->
+  <div class="section">
+    <div class="section-title">&#128204; 액션 아이템</div>
+    <div class="actions-grid" id="actions"></div>
+  </div>
+
+</div>
+
+<script>
+// ==================== Student Data (Embedded) ====================
+const STUDENTS = [
+  {
+    name: '김지훈',
+    results: [
+      {score:148,accuracy:92.5,correct:37,total:40,mode:'전체 도전',modeKey:'full',streak:12,date:'2026-02-06',timestamp:1738800000000,categoryScores:{'한국사':{correct:10,total:10},'과학':{correct:9,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:9,total:10}},avgResponseTime:6.2},
+      {score:140,accuracy:90,correct:36,total:40,mode:'전체 도전',modeKey:'full',streak:10,date:'2026-02-04',timestamp:1738627200000,categoryScores:{'한국사':{correct:10,total:10},'과학':{correct:9,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:9,total:10}},avgResponseTime:7.1},
+      {score:135,accuracy:90,correct:9,total:10,mode:'카테고리별',modeKey:'category',streak:7,date:'2026-02-03',timestamp:1738540800000,categoryScores:{'한국사':{correct:9,total:10}},avgResponseTime:5.8},
+      {score:142,accuracy:90,correct:36,total:40,mode:'전체 도전',modeKey:'full',streak:9,date:'2026-02-01',timestamp:1738368000000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:10,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:6.5},
+      {score:130,accuracy:88,correct:35,total:40,mode:'전체 도전',modeKey:'full',streak:8,date:'2026-01-30',timestamp:1738195200000,categoryScores:{'한국사':{correct:10,total:10},'과학':{correct:9,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:7.3},
+      {score:118,accuracy:85,correct:17,total:20,mode:'스피드',modeKey:'speed',streak:6,date:'2026-01-28',timestamp:1738022400000,categoryScores:{'한국사':{correct:5,total:5},'과학':{correct:5,total:5},'지리':{correct:4,total:5},'예술과 문화':{correct:3,total:5}},avgResponseTime:8.1},
+      {score:138,accuracy:90,correct:36,total:40,mode:'전체 도전',modeKey:'full',streak:11,date:'2026-01-26',timestamp:1737849600000,categoryScores:{'한국사':{correct:10,total:10},'과학':{correct:9,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:6.8},
+      {score:125,accuracy:88,correct:35,total:40,mode:'전체 도전',modeKey:'full',streak:7,date:'2026-01-24',timestamp:1737676800000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:10,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:7.5},
+      {score:132,accuracy:90,correct:9,total:10,mode:'카테고리별',modeKey:'category',streak:8,date:'2026-01-22',timestamp:1737504000000,categoryScores:{'과학':{correct:9,total:10}},avgResponseTime:5.5},
+      {score:136,accuracy:90,correct:36,total:40,mode:'전체 도전',modeKey:'full',streak:10,date:'2026-01-20',timestamp:1737331200000,categoryScores:{'한국사':{correct:10,total:10},'과학':{correct:9,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:6.9},
+      {score:128,accuracy:88,correct:35,total:40,mode:'전체 도전',modeKey:'full',streak:8,date:'2026-01-18',timestamp:1737158400000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:9,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:7.0},
+      {score:134,accuracy:90,correct:36,total:40,mode:'전체 도전',modeKey:'full',streak:9,date:'2026-01-16',timestamp:1736985600000,categoryScores:{'한국사':{correct:10,total:10},'과학':{correct:9,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:9,total:10}},avgResponseTime:6.4}
+    ]
+  },
+  {
+    name: '이서연',
+    results: [
+      {score:128,accuracy:85,correct:34,total:40,mode:'전체 도전',modeKey:'full',streak:8,date:'2026-02-06',timestamp:1738800000000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:7,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:7.8},
+      {score:125,accuracy:85,correct:17,total:20,mode:'스피드',modeKey:'speed',streak:7,date:'2026-02-04',timestamp:1738627200000,categoryScores:{'한국사':{correct:4,total:5},'과학':{correct:3,total:5},'지리':{correct:5,total:5},'예술과 문화':{correct:5,total:5}},avgResponseTime:8.2},
+      {score:120,accuracy:82.5,correct:33,total:40,mode:'전체 도전',modeKey:'full',streak:6,date:'2026-02-02',timestamp:1738454400000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:6,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:8.5},
+      {score:115,accuracy:82.5,correct:33,total:40,mode:'전체 도전',modeKey:'full',streak:6,date:'2026-01-31',timestamp:1738281600000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:6,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:8.8},
+      {score:110,accuracy:80,correct:32,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-01-29',timestamp:1738108800000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:6,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:9.0},
+      {score:130,accuracy:90,correct:9,total:10,mode:'카테고리별',modeKey:'category',streak:9,date:'2026-01-27',timestamp:1737936000000,categoryScores:{'예술과 문화':{correct:9,total:10}},avgResponseTime:6.0},
+      {score:105,accuracy:80,correct:32,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-01-25',timestamp:1737763200000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:5,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:9.2},
+      {score:100,accuracy:78,correct:31,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-23',timestamp:1737590400000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:6,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:9.5},
+      {score:95,accuracy:78,correct:31,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-21',timestamp:1737417600000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:5,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:9.8},
+      {score:90,accuracy:78,correct:31,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-19',timestamp:1737244800000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:5,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:10,total:10}},avgResponseTime:10.0}
+    ]
+  },
+  {
+    name: '박민준',
+    results: [
+      {score:95,accuracy:72.5,correct:29,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-02-05',timestamp:1738713600000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:7,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:9.5},
+      {score:88,accuracy:70,correct:28,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-02-03',timestamp:1738540800000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:7,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.2},
+      {score:82,accuracy:65,correct:26,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-02-01',timestamp:1738368000000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:6,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.8},
+      {score:90,accuracy:70,correct:14,total:20,mode:'스피드',modeKey:'speed',streak:5,date:'2026-01-30',timestamp:1738195200000,categoryScores:{'한국사':{correct:4,total:5},'과학':{correct:3,total:5},'지리':{correct:5,total:5},'예술과 문화':{correct:2,total:5}},avgResponseTime:9.0},
+      {score:92,accuracy:70,correct:28,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-01-28',timestamp:1738022400000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:7,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:9.8},
+      {score:120,accuracy:80,correct:8,total:10,mode:'카테고리별',modeKey:'category',streak:6,date:'2026-01-26',timestamp:1737849600000,categoryScores:{'지리':{correct:8,total:10}},avgResponseTime:7.0},
+      {score:85,accuracy:67.5,correct:27,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-24',timestamp:1737676800000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:7,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.5},
+      {score:88,accuracy:70,correct:28,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-22',timestamp:1737504000000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:6,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.0},
+      {score:80,accuracy:65,correct:26,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-20',timestamp:1737331200000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:6,total:10},'지리':{correct:9,total:10},'예술과 문화':{correct:5,total:10}},avgResponseTime:11.0},
+      {score:92,accuracy:70,correct:28,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-01-18',timestamp:1737158400000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:7,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:9.7},
+      {score:86,accuracy:67.5,correct:27,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-16',timestamp:1736985600000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:6,total:10},'지리':{correct:8,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.3}
+    ]
+  },
+  {
+    name: '최예은',
+    results: [
+      {score:98,accuracy:75,correct:30,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-02-05',timestamp:1738713600000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:7,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:9.2},
+      {score:78,accuracy:60,correct:24,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-02-02',timestamp:1738454400000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:5,total:10},'지리':{correct:4,total:10},'예술과 문화':{correct:7,total:10}},avgResponseTime:10.5},
+      {score:95,accuracy:72.5,correct:29,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-01-30',timestamp:1738195200000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:6,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:9.5},
+      {score:75,accuracy:60,correct:12,total:20,mode:'스피드',modeKey:'speed',streak:3,date:'2026-01-28',timestamp:1738022400000,categoryScores:{'한국사':{correct:4,total:5},'과학':{correct:3,total:5},'지리':{correct:2,total:5},'예술과 문화':{correct:3,total:5}},avgResponseTime:10.0},
+      {score:88,accuracy:70,correct:28,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-26',timestamp:1737849600000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:7,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:9.8},
+      {score:80,accuracy:62.5,correct:25,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-24',timestamp:1737676800000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:6,total:10},'지리':{correct:4,total:10},'예술과 문화':{correct:7,total:10}},avgResponseTime:10.3},
+      {score:92,accuracy:72.5,correct:29,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-01-22',timestamp:1737504000000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:6,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:8,total:10}},avgResponseTime:9.6},
+      {score:85,accuracy:67.5,correct:27,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-20',timestamp:1737331200000,categoryScores:{'한국사':{correct:8,total:10},'과학':{correct:7,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:7,total:10}},avgResponseTime:10.0},
+      {score:82,accuracy:65,correct:26,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-01-18',timestamp:1737158400000,categoryScores:{'한국사':{correct:9,total:10},'과학':{correct:5,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:7,total:10}},avgResponseTime:10.2}
+    ]
+  },
+  {
+    name: '정우진',
+    results: [
+      {score:85,accuracy:65,correct:26,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-02-06',timestamp:1738800000000,categoryScores:{'한국사':{correct:5,total:10},'과학':{correct:8,total:10},'지리':{correct:7,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:9.8},
+      {score:82,accuracy:65,correct:13,total:20,mode:'스피드',modeKey:'speed',streak:4,date:'2026-02-04',timestamp:1738627200000,categoryScores:{'한국사':{correct:2,total:5},'과학':{correct:4,total:5},'지리':{correct:4,total:5},'예술과 문화':{correct:3,total:5}},avgResponseTime:10.0},
+      {score:80,accuracy:62.5,correct:25,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-02-01',timestamp:1738368000000,categoryScores:{'한국사':{correct:4,total:10},'과학':{correct:8,total:10},'지리':{correct:7,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.2},
+      {score:75,accuracy:60,correct:24,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-29',timestamp:1738108800000,categoryScores:{'한국사':{correct:4,total:10},'과학':{correct:7,total:10},'지리':{correct:7,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.5},
+      {score:70,accuracy:57.5,correct:23,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-27',timestamp:1737936000000,categoryScores:{'한국사':{correct:4,total:10},'과학':{correct:7,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:11.0},
+      {score:110,accuracy:70,correct:7,total:10,mode:'카테고리별',modeKey:'category',streak:5,date:'2026-01-25',timestamp:1737763200000,categoryScores:{'과학':{correct:7,total:10}},avgResponseTime:8.0},
+      {score:65,accuracy:55,correct:22,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-23',timestamp:1737590400000,categoryScores:{'한국사':{correct:3,total:10},'과학':{correct:7,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:11.5},
+      {score:60,accuracy:52.5,correct:21,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-21',timestamp:1737417600000,categoryScores:{'한국사':{correct:3,total:10},'과학':{correct:6,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:12.0},
+      {score:55,accuracy:50,correct:20,total:40,mode:'전체 도전',modeKey:'full',streak:2,date:'2026-01-19',timestamp:1737244800000,categoryScores:{'한국사':{correct:3,total:10},'과학':{correct:6,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:12.5},
+      {score:50,accuracy:50,correct:20,total:40,mode:'전체 도전',modeKey:'full',streak:2,date:'2026-01-17',timestamp:1737072000000,categoryScores:{'한국사':{correct:3,total:10},'과학':{correct:6,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:13.0}
+    ]
+  },
+  {
+    name: '한소율',
+    results: [
+      {score:52,accuracy:42.5,correct:17,total:40,mode:'전체 도전',modeKey:'full',streak:2,date:'2026-02-05',timestamp:1738713600000,categoryScores:{'한국사':{correct:5,total:10},'과학':{correct:4,total:10},'지리':{correct:4,total:10},'예술과 문화':{correct:4,total:10}},avgResponseTime:12.0},
+      {score:55,accuracy:45,correct:18,total:40,mode:'전체 도전',modeKey:'full',streak:2,date:'2026-02-02',timestamp:1738454400000,categoryScores:{'한국사':{correct:5,total:10},'과학':{correct:5,total:10},'지리':{correct:4,total:10},'예술과 문화':{correct:4,total:10}},avgResponseTime:11.8},
+      {score:48,accuracy:40,correct:8,total:20,mode:'스피드',modeKey:'speed',streak:2,date:'2026-01-30',timestamp:1738195200000,categoryScores:{'한국사':{correct:2,total:5},'과학':{correct:2,total:5},'지리':{correct:2,total:5},'예술과 문화':{correct:2,total:5}},avgResponseTime:12.5},
+      {score:60,accuracy:47.5,correct:19,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-27',timestamp:1737936000000,categoryScores:{'한국사':{correct:5,total:10},'과학':{correct:5,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:4,total:10}},avgResponseTime:11.5},
+      {score:65,accuracy:50,correct:20,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-24',timestamp:1737676800000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:5,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:4,total:10}},avgResponseTime:11.2},
+      {score:68,accuracy:52.5,correct:21,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-21',timestamp:1737417600000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:5,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:5,total:10}},avgResponseTime:10.8},
+      {score:72,accuracy:55,correct:22,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-18',timestamp:1737158400000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:6,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:5,total:10}},avgResponseTime:10.5},
+      {score:70,accuracy:55,correct:22,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-15',timestamp:1736899200000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:6,total:10},'지리':{correct:5,total:10},'예술과 문화':{correct:5,total:10}},avgResponseTime:10.8}
+    ]
+  },
+  {
+    name: '오태현',
+    results: [
+      {score:90,accuracy:70,correct:28,total:40,mode:'전체 도전',modeKey:'full',streak:5,date:'2026-02-06',timestamp:1738800000000,categoryScores:{'한국사':{correct:7,total:10},'과학':{correct:7,total:10},'지리':{correct:7,total:10},'예술과 문화':{correct:7,total:10}},avgResponseTime:9.5},
+      {score:82,accuracy:65,correct:26,total:40,mode:'전체 도전',modeKey:'full',streak:4,date:'2026-02-03',timestamp:1738540800000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:7,total:10},'지리':{correct:7,total:10},'예술과 문화':{correct:6,total:10}},avgResponseTime:10.0},
+      {score:72,accuracy:55,correct:11,total:20,mode:'스피드',modeKey:'speed',streak:3,date:'2026-01-31',timestamp:1738281600000,categoryScores:{'한국사':{correct:3,total:5},'과학':{correct:3,total:5},'지리':{correct:3,total:5},'예술과 문화':{correct:2,total:5}},avgResponseTime:10.5},
+      {score:68,accuracy:57.5,correct:23,total:40,mode:'전체 도전',modeKey:'full',streak:3,date:'2026-01-28',timestamp:1738022400000,categoryScores:{'한국사':{correct:6,total:10},'과학':{correct:6,total:10},'지리':{correct:6,total:10},'예술과 문화':{correct:5,total:10}},avgResponseTime:10.8}
+    ]
+  }
+];
+
+const CATEGORIES = ['한국사', '과학', '지리', '예술과 문화'];
+const CAT_COLORS = {
+  '한국사': '#4f46e5',
+  '과학': '#0891b2',
+  '지리': '#16a34a',
+  '예술과 문화': '#d946ef'
+};
+
+// ==================== Analysis Functions ====================
+function analyzeStudent(s) {
+  const r = s.results;
+  const games = r.length;
+  const totalScore = r.reduce((a, x) => a + x.score, 0);
+  const avgScore = Math.round(totalScore / games);
+  const totalCorrect = r.reduce((a, x) => a + x.correct, 0);
+  const totalQ = r.reduce((a, x) => a + x.total, 0);
+  const accuracy = Math.round((totalCorrect / totalQ) * 1000) / 10;
+  const maxStreak = Math.max(...r.map(x => x.streak));
+
+  // Trend: compare first half vs second half accuracy
+  const sorted = [...r].sort((a, b) => a.timestamp - b.timestamp);
+  const mid = Math.floor(sorted.length / 2);
+  const oldHalf = sorted.slice(0, mid);
+  const newHalf = sorted.slice(mid);
+  const oldAcc = oldHalf.reduce((a, x) => a + x.accuracy, 0) / oldHalf.length;
+  const newAcc = newHalf.reduce((a, x) => a + x.accuracy, 0) / newHalf.length;
+  const trendDiff = Math.round((newAcc - oldAcc) * 10) / 10;
+
+  // Category breakdown
+  const catStats = {};
+  CATEGORIES.forEach(cat => { catStats[cat] = { correct: 0, total: 0 }; });
+  r.forEach(g => {
+    if (!g.categoryScores) return;
+    Object.entries(g.categoryScores).forEach(([cat, d]) => {
+      if (catStats[cat]) {
+        catStats[cat].correct += d.correct;
+        catStats[cat].total += d.total;
+      }
+    });
+  });
+
+  const catAccuracy = {};
+  CATEGORIES.forEach(cat => {
+    catAccuracy[cat] = catStats[cat].total > 0
+      ? Math.round((catStats[cat].correct / catStats[cat].total) * 1000) / 10
+      : null;
+  });
+
+  // Grade
+  const grade = accuracy >= 90 ? 'S' : accuracy >= 80 ? 'A' : accuracy >= 70 ? 'B' : accuracy >= 60 ? 'C' : 'D';
+
+  return { name: s.name, games, avgScore, accuracy, maxStreak, trendDiff, catAccuracy, grade };
+}
+
+function getGradeHTML(g) {
+  return '<span class="grade-badge grade-' + g + '">' + g + '</span>';
+}
+
+function getTrendHTML(diff) {
+  if (diff > 2) return '<span class="trend-up">\u25B2 +' + diff + '%p</span>';
+  if (diff < -2) return '<span class="trend-down">\u25BC ' + diff + '%p</span>';
+  return '<span class="trend-flat">\u2014 ' + (diff >= 0 ? '+' : '') + diff + '%p</span>';
+}
+
+// ==================== Render Functions ====================
+function renderMetrics(students) {
+  const totalStudents = students.length;
+  const totalGames = students.reduce((a, s) => a + s.games, 0);
+  const classAvg = Math.round(students.reduce((a, s) => a + s.accuracy, 0) / totalStudents * 10) / 10;
+  const avgGames = Math.round(totalGames / totalStudents * 10) / 10;
+
+  const el = document.getElementById('metrics');
+  el.innerHTML = [
+    { label: '총 학생 수', value: totalStudents + '명', sub: '활성 학생' },
+    { label: '학급 평균 정답률', value: classAvg + '%', sub: classAvg >= 70 ? '양호' : classAvg >= 50 ? '보충 필요' : '집중 관리' },
+    { label: '총 게임 수', value: totalGames + '회', sub: '전체 누적' },
+    { label: '평균 게임 수', value: avgGames + '회', sub: '학생당' }
+  ].map(function(m) {
+    return '<div class="metric-card"><div class="label">' + m.label + '</div><div class="value">' + m.value + '</div><div class="sub">' + m.sub + '</div></div>';
+  }).join('');
+}
+
+let sortState = { key: 'accuracy', asc: false };
+
+function renderTable(students) {
+  const sorted = [...students].sort(function(a, b) {
+    let va = a[sortState.key], vb = b[sortState.key];
+    if (sortState.key === 'name') { va = va || ''; vb = vb || ''; return sortState.asc ? va.localeCompare(vb) : vb.localeCompare(va); }
+    if (sortState.key === 'trend') { va = a.trendDiff; vb = b.trendDiff; }
+    return sortState.asc ? va - vb : vb - va;
+  });
+
+  // Assign ranks by accuracy
+  const byAcc = [...students].sort(function(a, b) { return b.accuracy - a.accuracy; });
+  const rankMap = {};
+  byAcc.forEach(function(s, i) { rankMap[s.name] = i + 1; });
+
+  var tbody = document.getElementById('student-tbody');
+  tbody.innerHTML = sorted.map(function(s) {
+    return '<tr>' +
+      '<td>' + rankMap[s.name] + '</td>' +
+      '<td><strong>' + s.name + '</strong></td>' +
+      '<td>' + s.games + '회</td>' +
+      '<td>' + s.avgScore + '점</td>' +
+      '<td><strong>' + s.accuracy + '%</strong></td>' +
+      '<td>' + s.maxStreak + '연속</td>' +
+      '<td>' + getTrendHTML(s.trendDiff) + '</td>' +
+      '<td>' + getGradeHTML(s.grade) + '</td>' +
+      '</tr>';
+  }).join('');
+
+  // Update sort arrows
+  document.querySelectorAll('#student-table th').forEach(function(th) {
+    th.classList.toggle('sorted', th.dataset.key === sortState.key);
+    var arrow = th.querySelector('.sort-arrow');
+    if (th.dataset.key === sortState.key) {
+      arrow.textContent = sortState.asc ? '\u25B2' : '\u25BC';
+    } else {
+      arrow.textContent = '\u25B2';
+    }
+  });
+}
+
+function renderCategoryAnalysis(students) {
+  var grid = document.getElementById('cat-grid');
+  grid.innerHTML = CATEGORIES.map(function(cat) {
+    // Class average for this category
+    var vals = students.map(function(s) { return s.catAccuracy[cat]; }).filter(function(v) { return v !== null; });
+    var avg = vals.length > 0 ? Math.round(vals.reduce(function(a, b) { return a + b; }, 0) / vals.length * 10) / 10 : 0;
+
+    var status = avg >= 70 ? '\u2705 양호' : avg >= 50 ? '\u26A0\uFE0F 보충 필요' : '\uD83D\uDEA8 집중 보충';
+    var color = CAT_COLORS[cat];
+
+    var bars = students.map(function(s) {
+      var v = s.catAccuracy[cat];
+      if (v === null) return '';
+      var w = Math.max(v, 2);
+      return '<div class="bar-row">' +
+        '<span class="bar-label">' + s.name.slice(0, 3) + '</span>' +
+        '<div class="bar-track">' +
+          '<div class="bar-fill" style="width:' + w + '%;background:' + color + ';opacity:0.8"></div>' +
+          '<div class="avg-line" style="left:' + avg + '%"></div>' +
+        '</div>' +
+        '<span class="bar-value">' + v + '%</span>' +
+        '</div>';
+    }).join('');
+
+    return '<div class="cat-card">' +
+      '<h3>' + cat + '</h3>' +
+      '<div class="cat-avg">학급 평균 ' + avg + '% ' + status + '</div>' +
+      bars +
+      '</div>';
+  }).join('');
+}
+
+function renderHistogram(students) {
+  var buckets = [
+    { label: 'S (90%+)', range: [90, 101], color: '#3b82f6', names: [] },
+    { label: 'A (80-89%)', range: [80, 90], color: '#16a34a', names: [] },
+    { label: 'B (70-79%)', range: [70, 80], color: '#f59e0b', names: [] },
+    { label: 'C (60-69%)', range: [60, 70], color: '#f97316', names: [] },
+    { label: 'D (<60%)', range: [0, 60], color: '#dc2626', names: [] }
+  ];
+
+  students.forEach(function(s) {
+    for (var i = 0; i < buckets.length; i++) {
+      if (s.accuracy >= buckets[i].range[0] && s.accuracy < buckets[i].range[1]) {
+        buckets[i].names.push(s.name);
+        break;
+      }
+    }
+  });
+
+  var maxCount = Math.max(1, Math.max.apply(null, buckets.map(function(b) { return b.names.length; })));
+
+  var el = document.getElementById('histogram');
+  el.innerHTML = '<div class="hist-bars">' +
+    buckets.map(function(b) {
+      var h = Math.round((b.names.length / maxCount) * 150);
+      return '<div class="hist-col">' +
+        '<div class="hist-bar" style="height:' + (h || 4) + 'px;background:' + b.color + '">' +
+          '<span class="hist-count">' + b.names.length + '명</span>' +
+        '</div>' +
+        '<div class="hist-label">' + b.label + '</div>' +
+        '<div class="hist-names">' + (b.names.length > 0 ? b.names.join(', ') : '-') + '</div>' +
+      '</div>';
+    }).join('') +
+    '</div>';
+}
+
+function renderActions(students) {
+  var urgent = [];
+  var monitor = [];
+  var positive = [];
+
+  // Find category averages
+  var catAvgs = {};
+  CATEGORIES.forEach(function(cat) {
+    var vals = students.map(function(s) { return s.catAccuracy[cat]; }).filter(function(v) { return v !== null; });
+    catAvgs[cat] = vals.length > 0 ? Math.round(vals.reduce(function(a, b) { return a + b; }, 0) / vals.length * 10) / 10 : 0;
+  });
+
+  // Urgent: low accuracy students, low category averages
+  students.forEach(function(s) {
+    if (s.accuracy < 50) urgent.push(s.name + ' 개별 지도 필요 (정답률 ' + s.accuracy + '%)');
+  });
+  CATEGORIES.forEach(function(cat) {
+    if (catAvgs[cat] < 50) urgent.push(cat + ' 보충 수업 필요 (학급 평균 ' + catAvgs[cat] + '%)');
+  });
+
+  // Monitor: declining students, borderline categories
+  students.forEach(function(s) {
+    if (s.trendDiff < -3) monitor.push(s.name + ' 성적 하락 추세 (' + s.trendDiff + '%p)');
+  });
+  CATEGORIES.forEach(function(cat) {
+    if (catAvgs[cat] >= 50 && catAvgs[cat] < 65) monitor.push(cat + ' 정답률 주의 (학급 평균 ' + catAvgs[cat] + '%)');
+  });
+  students.forEach(function(s) {
+    if (s.games < 5) monitor.push(s.name + ' 데이터 부족 (' + s.games + '게임) — 추가 참여 유도');
+  });
+
+  // Positive
+  students.forEach(function(s) {
+    if (s.trendDiff > 3) positive.push(s.name + ' 성장 추세 양호 (+' + s.trendDiff + '%p)');
+    if (s.accuracy >= 85) positive.push(s.name + ' 우수 성적 유지 (' + s.accuracy + '%)');
+  });
+  CATEGORIES.forEach(function(cat) {
+    if (catAvgs[cat] >= 80) positive.push(cat + ' 학급 전반 이해도 높음 (' + catAvgs[cat] + '%)');
+  });
+
+  var el = document.getElementById('actions');
+
+  function renderCard(title, items, cls, icon) {
+    if (items.length === 0) items = ['해당 사항 없음'];
+    return '<div class="action-card ' + cls + '">' +
+      '<h3>' + icon + ' ' + title + '</h3>' +
+      '<ul>' + items.map(function(item) { return '<li>' + item + '</li>'; }).join('') + '</ul>' +
+      '</div>';
+  }
+
+  el.innerHTML =
+    renderCard('즉시 조치', urgent, 'urgent', '\uD83D\uDEA8') +
+    renderCard('모니터링', monitor, 'monitor', '\u26A0\uFE0F') +
+    renderCard('긍정적 사항', positive, 'positive', '\u2705');
+}
+
+// ==================== Sort Handler ====================
+document.getElementById('student-table').addEventListener('click', function(e) {
+  var th = e.target.closest('th');
+  if (!th || !th.dataset.key) return;
+  var key = th.dataset.key;
+  if (sortState.key === key) {
+    sortState.asc = !sortState.asc;
+  } else {
+    sortState.key = key;
+    sortState.asc = key === 'name';
+  }
+  renderTable(window._analyzed);
+});
+
+// ==================== Theme Toggle ====================
+function toggleTheme() {
+  var html = document.documentElement;
+  var isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? '' : 'dark');
+  document.getElementById('theme-icon').textContent = isDark ? '\uD83C\uDF19' : '\u2600\uFE0F';
+}
+
+// ==================== Init ====================
+(function init() {
+  // Set generation date
+  var now = new Date();
+  document.getElementById('gen-date').textContent =
+    '\uC0DD\uC131\uC77C: ' + now.getFullYear() + '-' +
+    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+    String(now.getDate()).padStart(2, '0') + ' ' +
+    String(now.getHours()).padStart(2, '0') + ':' +
+    String(now.getMinutes()).padStart(2, '0');
+
+  // Analyze all students
+  var analyzed = STUDENTS.map(analyzeStudent);
+  window._analyzed = analyzed;
+
+  // Render all sections
+  renderMetrics(analyzed);
+  renderTable(analyzed);
+  renderCategoryAnalysis(analyzed);
+  renderHistogram(analyzed);
+  renderActions(analyzed);
+})();
+</script>
+</body>
+</html>

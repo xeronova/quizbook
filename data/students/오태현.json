@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "results": [
+    {
+      "score": 90, "accuracy": 70.0, "correct": 28, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 5, "date": "2026-02-06", "time": "10:30",
+      "timestamp": 1738800000000,
+      "categoryScores": {"한국사": {"correct": 7, "total": 10}, "과학": {"correct": 7, "total": 10}, "지리": {"correct": 7, "total": 10}, "예술과 문화": {"correct": 7, "total": 10}},
+      "avgResponseTime": 9.5,
+      "totalBaseScore": 280, "totalTimeBonus": 15, "totalComboBonus": 8, "totalHintBonus": 20
+    },
+    {
+      "score": 82, "accuracy": 65.0, "correct": 26, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 4, "date": "2026-02-03", "time": "11:00",
+      "timestamp": 1738540800000,
+      "categoryScores": {"한국사": {"correct": 6, "total": 10}, "과학": {"correct": 7, "total": 10}, "지리": {"correct": 7, "total": 10}, "예술과 문화": {"correct": 6, "total": 10}},
+      "avgResponseTime": 10.0,
+      "totalBaseScore": 260, "totalTimeBonus": 9, "totalComboBonus": 4, "totalHintBonus": 16
+    },
+    {
+      "score": 72, "accuracy": 55.0, "correct": 11, "total": 20,
+      "mode": "스피드", "modeKey": "speed", "selectedCategory": null,
+      "streak": 3, "date": "2026-01-31", "time": "5:15",
+      "timestamp": 1738281600000,
+      "categoryScores": {"한국사": {"correct": 3, "total": 5}, "과학": {"correct": 3, "total": 5}, "지리": {"correct": 3, "total": 5}, "예술과 문화": {"correct": 2, "total": 5}},
+      "avgResponseTime": 10.5,
+      "totalBaseScore": 110, "totalTimeBonus": 6, "totalComboBonus": 2, "totalHintBonus": 10
+    },
+    {
+      "score": 68, "accuracy": 57.5, "correct": 23, "total": 40,
+      "mode": "전체 도전", "modeKey": "full", "selectedCategory": null,
+      "streak": 3, "date": "2026-01-28", "time": "11:40",
+      "timestamp": 1738022400000,
+      "categoryScores": {"한국사": {"correct": 6, "total": 10}, "과학": {"correct": 6, "total": 10}, "지리": {"correct": 6, "total": 10}, "예술과 문화": {"correct": 5, "total": 10}},
+      "avgResponseTime": 10.8,
+      "totalBaseScore": 230, "totalTimeBonus": 6, "totalComboBonus": 2, "totalHintBonus": 10
+    }
+  ],
+  "settings": {"darkMode": false, "soundEnabled": true},
+  "stats": {"totalGames": 4, "totalCorrect": 88, "totalQuestions": 140}
+}
